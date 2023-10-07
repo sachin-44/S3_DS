@@ -1,6 +1,4 @@
-Here's a C program that performs the operations you requested:
-
-```c
+//BY DROOD OP
 #include <stdio.h>
 #include <stdlib.h>
 
