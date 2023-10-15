@@ -1,58 +1,50 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <math.h>
+#include <stdlib.h>
+#include <ctype.h>
+#define MAX_SIZE 100
 
-//OPERATOR STACK//
-char operatorStack[100];
+char stack[100];
 int top = -1;
 
 //OPERATOR STACK FUNCTION//
-void OperatorStack_push(char ch)
+void push(char ch)
 {
-    operatorStack[++top] = ch;
+   stack[++top] = ch;
+}
+void push1(char item) {
+    if (top >= MAX_SIZE - 1) {
+        printf("Stack Overflow\n");
+        exit(1);
+    }
+    stack[++top] = item;
 }
 
-char OperatorStack_pop()
+int pop1() {
+    if (top < 0) {
+        printf("Stack Underflow\n");
+        exit(1);
+    }
+    return stack[top--];
+}
+char pop()
 {
-    return operatorStack[top--];
+    return stack[top--];
 }
 
-char OperatorStack_peek()
+char peek()
 {
-    return operatorStack[top];
+    return stack[top];
 }
 
-bool OperatorStack_isEmpty()
+bool empty()
 {
     return top == -1;
 }
 
 //OTHER FUNCTIONS=//
-bool isDigit(char c)
-{
-    return (c >= '0' && c <= '9');
-}
 
-// To perform the given operation on operands and return result
-int performOperation(char operator, int op1, int op2)
-{
-    switch (operator)
-    {
-    case '+':
-        return op2 + op1;
-    case '-':
-        return op2 - op1;
-    case '*':
-        return op2 * op1;
-    case '/':
-        return op2 / op1;
-    case '^':
-        return pow(op2, op1);
-    default:
-        return -1;
-    }
-}
 // To get precedence of current character
 int getPrecedence(char c)
 {
@@ -74,7 +66,7 @@ int getPrecedence(char c)
 }
 
 // To check higher precedence of two characters
-bool hasHigherPrecedence(char c1, char c2)
+bool highprecedence(char c1, char c2)
 {
     return getPrecedence(c1) >= getPrecedence(c2);
 }
@@ -111,85 +103,105 @@ void infix2postfix(char exp[])
         }
         else if (!isOpeningBracket(exp[i]) && !isClosingBracket(exp[i])) // If current character is operator (not brackets)
         {
-            while (!OperatorStack_isEmpty() && !isOpeningBracket(OperatorStack_peek()) && hasHigherPrecedence(OperatorStack_peek(), exp[i])) // Checking precedence
+            while (!empty() && !isOpeningBracket(peek()) && highprecedence(peek(), exp[i])) // Checking precedence
             {
-                postfix[k++] = OperatorStack_pop(); // If greater precedence, then pop and push top to postfix
+                postfix[k++] = pop(); // If greater precedence, then pop and push top to postfix
             }
-            OperatorStack_push(exp[i]); // If lower precedence, push to operator stack
+            push(exp[i]); // If lower precedence, push to operator stack
         }
         else if (isOpeningBracket(exp[i])) // If opening bracket
         {
-            OperatorStack_push(exp[i]); // Then push to operator stack
+           push(exp[i]); // Then push to operator stack
         }
         else if (isClosingBracket(exp[i])) // If closing bracket
         {
-            while (!OperatorStack_isEmpty() && !isOpeningBracket(OperatorStack_peek())) // Till stack is empty and not opening bracket
+            while (!empty() && !isOpeningBracket(peek())) // Till stack is empty and not opening bracket
             {
-                postfix[k++] = OperatorStack_pop(); // pop operator stack and push to postfix
+                postfix[k++] = pop(); // pop operator stack and push to postfix
             }
-            OperatorStack_pop(); // This is to pop the closing bracket
+            pop(); // This is to pop the closing bracket
         }
     }
-    while (!OperatorStack_isEmpty()) // For the remaining element in operator stack (if any)
+    while (!empty()) // For the remaining element in operator stack (if any)
     {
-        postfix[k++] = OperatorStack_pop(); // Simply pop and push it to the postfix
+        postfix[k++] = pop(); // Simply pop and push it to the postfix
     }
-    printf("\nPostfix expression is \t"); // Printing postfix expression
+    printf("\nPostfix expression\n"); // Printing postfix expression
     for (int i = 0; i < k; i++)
     {
         printf("%c", postfix[i]);
     }
 }
-// ===== POSTFIX EVALUATION FUNCTION ===== //
-int postfixEval(char exp[])
-{
-    int n = strlen(exp);        // length of given expression
-    for (int i = 0; i < n; i++) // for each character in expression
-    {
-        if (exp[i] == ' ')   // if character is space
-            continue;        // then continue to next character
-        if (isDigit(exp[i])) // if character is digit
-        {
-            int num = 0;
-            while (isDigit(exp[i])) // To continue in case of multiple digits
-            {
-                num = num * 10 + (int)(exp[i] - '0'); // '0' is subtracted since exp[i] is a character
-                i++;
+int evaluate_postfix(char* exp) {
+    int i, op1, op2, result;
+    char *token;
+
+    token = strtok(exp, " ");
+    while (token != NULL) {
+        if (isdigit(*token)) {
+            push(atoi(token));
+        } else {
+            op2 = pop();
+            op1 = pop();
+            switch (*token) {
+                case '+':
+                    result = op1 + op2;
+                    break;
+                case '-':
+                    result = op1 - op2;
+                    break;
+                case '*':
+                    result = op1 * op2;
+                    break;
+                case '/':
+                    result = op1 / op2;
+                    break;
+                default:
+                    printf("Invalid operator\n");
+                    exit(1);
             }
-            i--;
-            OperatorStack_push(num); // the resulting number is pushed to the stack
+            push(result);
         }
-        else // If operator
-        {
-            int op1 = OperatorStack_pop(); // Then pop two elements from stack
-            int op2 = OperatorStack_pop();
-            int result = performOperation(exp[i], op1, op2); // and perform the operation on them
-            OperatorStack_push(result);                              // Push this result to the stack
-        }
+        token = strtok(NULL, " ");
     }
-    return OperatorStack_peek(); // The answer will be the top and only element remaining in stack
+    return pop();
 }
+
+
+
 //=======MAIN FUNCTION=======//
 int main()
 {
+    {
     int ch;
-    char exp[100],exp1[100]; // infix expression
+    char exp[100]; // infix expression
     printf("Choose 1 to Convert infix to postfix expression \nchoose 2 to evaluvate a postfix expression\n");
     scanf("%d",&ch);
     switch(ch)
         {
            case(1): 
     printf("\nEnter infix expression without any spaces\n");
-    //printf("\nFor unary - or +, use $. eg: a*-b must be entered as a*$b\n\n");
+    
     scanf("%s", &exp);
     infix2postfix(exp);
 break;
-case(2):printf("\nEnter postfix expression, each item must be space separated\n");
-    printf("For example: 12 32 + 44 /\n");
-    scanf("%s",exp1);
-    int EvaluatedValue = postfixEval(exp1);
-    printf("\nResult Of evaluated postfix:  %d", EvaluatedValue);
+case(2):
+     char exp1[MAX_SIZE];
+    printf("Enter postfix expression: ");
+    getchar();
+    fgets(exp1, sizeof(exp1), stdin);
+    int len = strlen(exp1);
+    if (exp1[len - 1] == '\n') {
+        exp1[len - 1] = '\0';
+    }
+    int result = evaluate_postfix(exp1);
+    printf("Result: %d\n", result);
     break;
     default :printf("error\n");
     }
+   
+//CSL201 DATA STRUCTURES LAB ----- DEION TOMSON
+
 }
+}
+
