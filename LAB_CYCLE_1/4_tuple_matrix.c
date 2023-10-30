@@ -1,105 +1,197 @@
 //BY DROOD OP
 #include <stdio.h>
-#include <stdlib.h>
 
-#define MAX 100
+struct matrix
+{
+    int row;
+    int col;
+    int value;
+} mat1[100], mat2[100], res[100], trans[100];
 
-void convert_to_tuple(int arr[][MAX], int row, int col, int tuple[][3]) {
-    int k = 0;
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            if (arr[i][j] != 0) {
-                tuple[k][0] = i;
-                tuple[k][1] = j;
-                tuple[k][2] = arr[i][j];
+void input(int mat[10][10], int r, int c)
+{
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            scanf("%d", &mat[i][j]);
+        }
+    }
+}
+
+int conversion(int mat[10][10], int r, int c, struct matrix arr[])
+{
+    int k = 1;
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            if (mat[i][j] != 0)
+            {
+                arr[k].row = i;
+                arr[k].col = j;
+                arr[k].value = mat[i][j];
                 k++;
+            }
+            else
+                continue;
+        }
+    }
+    arr[0].row = r;
+    arr[0].col = c;
+    arr[0].value = (k - 1);
+    return k;
+}
+
+void display(struct matrix arr[], int n)
+{ 
+    for (int i = 0; i < n; i++)
+    { if(arr[i].value!=0)
+       { printf("< %d, %d, %d >\n", arr[i].row, arr[i].col, arr[i].value);
+    }
+    }
+    printf("\n");
+}
+
+int add(struct matrix mat1[], struct matrix mat2[], struct matrix result[], int l, int m) {
+    int i = 1, j = 1, k = 1;
+
+    if (mat1[0].row == mat2[0].row && mat1[0].col == mat2[0].col) {
+        result[0].row = mat1[0].row;
+        result[0].col = mat1[0].col;
+
+        while (i <= l && j <= m) {
+            if (mat1[i].row < mat2[j].row) {
+                result[k].col = mat1[i].col;
+                result[k].row = mat1[i].row;
+                result[k].value = mat1[i].value;
+                k++;
+                i++;
+            } else if (mat1[i].row > mat2[j].row) {
+                result[k].col = mat2[j].col;
+                result[k].row = mat2[j].row;
+                result[k].value = mat2[j].value;
+                k++;
+                j++;
+            } else if (mat1[i].col < mat2[j].col) {
+                result[k].col = mat1[i].col;
+                result[k].row = mat1[i].row;
+                result[k].value = mat1[i].value;
+                k++;
+                i++;
+            } else if (mat1[i].col > mat2[j].col) {
+                result[k].col = mat2[j].col;
+                result[k].row = mat2[j].row;
+                result[k].value = mat2[j].value;
+                k++;
+                j++;
+            } else {
+                int sum = mat1[i].value + mat2[j].value;
+                result[k].col = mat1[i].col;
+                result[k].row = mat1[i].row;
+                result[k].value = sum;
+                k++;
+                i++;
+                j++;
+            }
+        }
+
+        while (i <= l) {
+            result[k].col = mat1[i].col;
+            result[k].row = mat1[i].row;
+            result[k].value = mat1[i].value;
+            k++;
+            i++;
+        }
+
+        while (j <= m) {
+            result[k].col = mat2[j].col;
+            result[k].row = mat2[j].row;
+            result[k].value = mat2[j].value;
+            k++;
+            j++;
+        }
+
+        result[0].value = k - 1;
+    } else {
+        printf("Addition not possible\n");
+    }
+
+    return k;
+}
+
+void transpose(struct matrix mat[], struct matrix trans[], int n)
+{
+    int temp;
+    trans[0].col = mat[0].row;
+    trans[0].row = mat[0].col;
+    trans[0].value = mat[0].value;
+    for (int i = 1; i < n; i++)
+    {
+        for (int j = 1; j < n - i; j++)
+        {
+            if (mat[i].col > mat[i + 1].col)
+            {
+                temp = mat[i + 1].col;
+                mat[i + 1].col = mat[i].col;
+                mat[i].col = temp;
+
+                temp = mat[i + 1].row;
+                mat[i + 1].row = mat[i].row;
+                mat[i].row = temp;
+
+                temp = mat[i + 1].value;
+                mat[i + 1].value = mat[i].value;
+                mat[i].value = temp;
             }
         }
     }
-}
 
-void transpose(int tuple[][3], int n) {
-    for (int i = 0; i < n; i++) {
-        int temp = tuple[i][0];
-        tuple[i][0] = tuple[i][1];
-        tuple[i][1] = temp;
+    for (int i = 1; i < n; i++)
+    {
+        trans[i].row = mat[i].col;
+        trans[i].col = mat[i].row;
+        trans[i].value = mat[i].value;
     }
 }
 
-void display_tuple(int tuple[][3], int n) {
-    printf("Tuple form:\n");
-    printf("Row\tColumn\tValue\n");
-    for (int i = 0; i < n; i++) {
-        printf("%d\t%d\t%d\n", tuple[i][0], tuple[i][1], tuple[i][2]);
-    }
-}
+int main()
+{
+    int r1, c1, r2, c2, v, choice;
+    int matA[10][10];
+    int matB[10][10];
 
-void sum_of_tuples(int a[][MAX], int b[][MAX], int row, int col) {
-    int a_tuple[MAX * MAX][3], b_tuple[MAX * MAX][3];
-    convert_to_tuple(a, row, col, a_tuple);
-    convert_to_tuple(b, row, col, b_tuple);
+    printf("Enter the number of rows and columns in the first matrix\n");
+    scanf("%d %d", &r1, &c1);
+    printf("Enter the matrix\n");
+    input(matA, r1, c1);
 
-    printf("\nSum of two matrices in tuple form:\n");
-    printf("Row\tColumn\tValue\n");
+    printf("Enter the number of rows and columns in the second matrix\n");
+    scanf("%d %d", &r2, &c2);
+    printf("Enter the matrix\n");
+    input(matB, r2, c2);
 
-    int i = 0, j = 0;
-    while (i < row * col && j < row * col) {
-        if (a_tuple[i][0] == b_tuple[j][0] && a_tuple[i][1] == b_tuple[j][1]) {
-            printf("%d\t%d\t%d\n", a_tuple[i][0], a_tuple[i][1], a_tuple[i][2] + b_tuple[j][2]);
-            i++;
-            j++;
-        } else if (a_tuple[i][0] < b_tuple[j][0] || (a_tuple[i][0] == b_tuple[j][0] && a_tuple[i][1] < b_tuple[j][1])) {
-            printf("%d\t%d\t%d\n", a_tuple[i][0], a_tuple[i][1], a_tuple[i][2]);
-            i++;
-        } else {
-            printf("%d\t%d\t%d\n", b_tuple[j][0], b_tuple[j][1], b_tuple[j][2]);
-            j++;
-        }
-    }//CSL201 DATA STRUCTURES LAB ----- DEION TOMSON
+    printf("First matrix\n");
+    int k = conversion(matA, r1, c1, mat1);
+    display(mat1, k);
 
-    while (i < row * col) {
-        printf("%d\t%d\t%d\n", a_tuple[i][0], a_tuple[i][1], a_tuple[i++][2]);
-    }
+    printf("Second matrix\n");
+    int d = conversion(matB, r2, c2, mat2);
+    display(mat2, d);
 
-    while (j < row * col) {
-        printf("%d\t%d\t%d\n", b_tuple[j][0], b_tuple[j][1], b_tuple[j++][2]);
-    }
-}
+    printf("The transpose matrix are\nmatrix 1\n");
+    transpose(mat1, trans, k);
+    display(trans, k);
 
-int main() {
-    int row, col;
-    printf("Enter the number of rows and columns of the matrices: ");
-    scanf("%d %d", &row, &col);
+    printf("matrix 2\n");
+    transpose(mat2, trans, d);
+    display(trans, d);
 
-    int a[MAX][MAX], b[MAX][MAX];
-    printf("Enter the elements of the first matrix:\n");
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            scanf("%d", &a[i][j]);
-        }
-    }
-
-    printf("Enter the elements of the second matrix:\n");
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            scanf("%d", &b[i][j]);
-        }
-    }
-
-    int a_tuple[MAX * MAX][3], b_tuple[MAX * MAX][3];
-    convert_to_tuple(a, row, col, a_tuple);
-    convert_to_tuple(b, row, col, b_tuple);
-
-    display_tuple(a_tuple, row * col);
-    display_tuple(b_tuple, row * col);
-
-    transpose(a_tuple, row * col);
-    transpose(b_tuple, row * col);
-
-    display_tuple(a_tuple, row * col);
-    display_tuple(b_tuple, row * col);
-
-    sum_of_tuples(a, b, row, col);
+    printf("The sum matrix is\n");
+   
+    v = add(mat1, mat2, res, k, d);
+  res[0].value=mat1[0].value+mat2[0].value;
+    display(res, v);
 
     return 0;
 }
