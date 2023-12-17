@@ -1,119 +1,105 @@
+#include <stdio.h>
 
-#include<stdio.h>
-#include<stdlib.h>
+#define MAX_SIZE 10
 
-struct node
-{
-	int data,prio;
-	struct node *link;
-}; struct node *front=NULL;
+// Function prototypes
+void insertElement(int element, int priority);
+void deleteElement();
+void displayQueue();
 
-void endq() ;
-void deq();
-void display();
+// Global variables
+int priorityQueue[MAX_SIZE];
+int front = -1, rear = -1;
 
-int main()
-{
- int choice;
- 
- 
- 
-  
- while(1)
-	{
-	printf(" 1.endqueue\n 2.dequeue\n 3.display\n 4.exit\n Enter the choice:");
-	scanf("%d",&choice);
-	switch(choice)
-	{
-	  case 1:
-		
-		
-		endq();
-		break;
-	  case 2:
-		deq();
-		break;
-	  case 3:
-		display();
-		break;
-	  case 4:exit(0);
-	  default:printf("invalid choice\n");
-			break;
-		
-	}
-	}
-}
-//CSL201 DATA STRUCTURES LAB ----- DEION TOMSON
-void endq()
-{	int p;
-	struct node *new,*temp;
-	new=(struct node *)malloc(sizeof(struct node));
-	new->link=NULL;
-	printf("enter data:");
-	scanf("%d",&new->data);
-	printf("enter priority:");
-	scanf("%d",&p);
-	new->prio=p;
-	if(front==NULL)
-	{
-		front=new;
-	}
-	else if(p<(front->prio))
-	{
-		new->link=front;
-		front=new;
-	}
-	else
-	{
-		temp=front;
-		while(temp->link!=NULL)
-		{
-			if((temp->link->prio)<=p)
-				temp=temp->link;
-			else
-				break;
-		}
-		if(temp->link==NULL)
-		{
-			temp->link=new;
-		}
-		else
-			{new->link=temp->link;
-			temp->link=new;}
-	}
-	
+int main() {
+    int choice, element, priority;
+
+    do {
+        printf("\nPriority Queue Operations:\n");
+        printf("1. Insert Element\n");
+        printf("2. Delete Element\n");
+        printf("3. Display Queue\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the element to insert: ");
+                scanf("%d", &element);
+                printf("Enter the priority of the element: ");
+                scanf("%d", &priority);
+                insertElement(element, priority);
+                displayQueue();
+                break;
+
+            case 2:
+                deleteElement();
+                displayQueue();
+                break;
+
+            case 3:
+                displayQueue();
+                break;
+
+            case 4:
+                printf("Exiting the program.\n");
+                break;
+
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
 }
 
-void deq()
-{
-	struct node *temp;
-	if (front==NULL)
-    	printf("under flow\n");
- 
- 	
-     else
-	{
-		temp=front;
-		printf("dequed element:%d\n",temp->data);
-		front=front->link;
-		free(temp);
+void insertElement(int element, int priority) {
+    if (rear == MAX_SIZE - 1) {
+        printf("Queue overflow. Cannot insert element.\n");
+        return;
+    }
 
-	}
+    if (front == -1) {
+        front = rear = 0;
+        priorityQueue[rear] = element;
+    } else {
+        int i;
+        for (i = rear; i >= front && priority < priorityQueue[i]; i--) {
+            priorityQueue[i + 1] = priorityQueue[i];
+        }
+        priorityQueue[i + 1] = element;
+        rear++;
+    }
+
+   //printf("Element %d with priority %d inserted successfully.\n", element, priority);
 }
-void display()
-{
-		if(front==NULL)
-			printf("queue empty\n");
-		else
-			{
-				struct node *temp=front;
-				while(temp!= NULL)
-				{
-					printf("data :%d priority:%d\n",temp->data,temp->prio);
-					temp=temp->link;		
-				}
 
-			}
+void deleteElement() {
+    if (front == -1) {
+        printf("Queue underflow. Cannot delete element.\n");
+        return;
+    }
 
+    printf("Deleted element: %d\n", priorityQueue[front]);
 
+    if (front == rear) {
+        // Only one element in the queue
+        front = rear = -1;
+    } else {
+        front++;
+    }
+}
+
+void displayQueue() {
+    if (front == -1) {
+        printf("Priority Queue is empty.\n");
+        return;
+    }
+
+    printf("Priority Queue: ");
+    for (int i = front; i <= rear; i++) {
+        printf("%d ", priorityQueue[i]);
+    }
+    printf("\n");
 }
